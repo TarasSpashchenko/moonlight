@@ -10,7 +10,7 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> promise) {
     Promise<String> httpVerticleDeployment = Promise.promise();
 
-    vertx.deployVerticle("HttpServerVerticle", new DeploymentOptions().setInstances(1), httpVerticleDeployment);
+    vertx.deployVerticle("com.dataimport.moonlight.http.HttpServerVerticle", new DeploymentOptions().setInstances(1), httpVerticleDeployment);
     httpVerticleDeployment
       .future()
       .onSuccess(

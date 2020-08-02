@@ -5,12 +5,16 @@ import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.kafka.client.producer.KafkaProducerRecord;
 import org.marc4j.marc.Record;
 
 public class MarcToKafkaWriteStreamWrapper implements WriteStream<Record> {
-  private RawToJsonMarcConverter converter = RawToJsonMarcConverterSimpleImpl.getInstance();
+  private static final Logger LOGGER = LoggerFactory.getLogger(MarcToKafkaWriteStreamWrapper.class);
+
+  private final RawToJsonMarcConverter converter = RawToJsonMarcConverterSimpleImpl.getInstance();
 
   private final WriteStream<KafkaProducerRecord<String, String>> delegate;
   private final String topicName;
@@ -51,16 +55,16 @@ public class MarcToKafkaWriteStreamWrapper implements WriteStream<Record> {
   @Override
   public void end() {
     delegate.end();
-    System.out.println("public void end()");
+    LOGGER.debug(Thread.currentThread().getName() + " - public void end()");
   }
 
   @Override
   public void end(Handler<AsyncResult<Void>> handler) {
     delegate.end(ar -> {
-      System.out.println("Messages sent: " + messageCounter);
+      LOGGER.debug(Thread.currentThread().getName() + " - Messages sent: " + messageCounter);
       handler.handle(ar);
     });
-    System.out.println("public void end(Handler<AsyncResult<Void>> handler)");
+    LOGGER.debug(Thread.currentThread().getName() + " - public void end(Handler<AsyncResult<Void>> handler)");
   }
 
   @Override

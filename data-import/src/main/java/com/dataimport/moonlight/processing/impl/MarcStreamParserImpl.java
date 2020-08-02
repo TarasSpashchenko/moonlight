@@ -35,7 +35,7 @@ public class MarcStreamParserImpl implements MarcStreamParser {
 
   private Throwable terminationOnErrorCause;
 
-  private static final Logger log = LoggerFactory.getLogger(MarcStreamParserImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MarcStreamParserImpl.class);
 
   public static MarcStreamParser newMarcParser(Vertx vertx, ReadStream<Buffer> stream) {
     return new MarcStreamParserImpl(vertx, stream);
@@ -65,7 +65,7 @@ public class MarcStreamParserImpl implements MarcStreamParser {
       ReadStream<Buffer> s = stream;
       if (s != null) {
         s.pause();
-        log.debug("Source stream is paused in handle(Buffer buffer).");
+        LOGGER.debug("Source stream is paused in handle(Buffer buffer).");
       }
     }
   }
@@ -102,14 +102,14 @@ public class MarcStreamParserImpl implements MarcStreamParser {
 
   @Override
   public MarcStreamParser pause() {
-    log.debug("MarcStreamParser.pause()");
+    LOGGER.debug("MarcStreamParser.pause()");
     if (demand) {
       demand = false;
       if (!streamEnded) {
         ReadStream<Buffer> s = stream;
         if (s != null) {
           s.pause();
-          log.debug("Source stream is paused in pause().");
+          LOGGER.debug("Source stream is paused in pause().");
         }
       }
     }
@@ -119,19 +119,19 @@ public class MarcStreamParserImpl implements MarcStreamParser {
   @Override
   public MarcStreamParser fetch(long amount) {
     if (terminated || terminationOnErrorRequested) {
-      log.warn("MarcStreamParser.fetch(long amount) - MarcStreamParser is already terminated...");
+      LOGGER.warn("MarcStreamParser.fetch(long amount) - MarcStreamParser is already terminated...");
       return this;
     }
     if (!demand) {
       demand = true;
-      log.debug("MarcStreamParser.fetch(long amount)");
+      LOGGER.debug("MarcStreamParser.fetch(long amount)");
 
       doProcessAsynchronously();
       if (!streamEnded) {
         ReadStream<Buffer> s = stream;
         if (s != null) {
           s.resume();
-          log.debug("Source stream is resumed.");
+          LOGGER.debug("Source stream is resumed.");
         }
       }
     }
@@ -141,18 +141,18 @@ public class MarcStreamParserImpl implements MarcStreamParser {
   @Override
   public MarcStreamParser resume() {
     if (terminated || terminationOnErrorRequested) {
-      log.warn("MarcStreamParser.resume() - MarcStreamParser is already terminated...");
+      LOGGER.warn("MarcStreamParser.resume() - MarcStreamParser is already terminated...");
       return this;
     }
 
     if (eventHandler == null) {
-      log.warn("MarcStreamParser.resume() - eventHandler is null, resume skipped...");
+      LOGGER.warn("MarcStreamParser.resume() - eventHandler is null, resume skipped...");
       return this;
     }
 
     boolean pausedNow = !demand;
-    if (log.isDebugEnabled() && pausedNow) {
-      log.debug("MarcStreamParser.resume()");
+    if (LOGGER.isDebugEnabled() && pausedNow) {
+      LOGGER.debug("MarcStreamParser.resume()");
     }
     return pausedNow ? fetch(Long.MAX_VALUE) : this;
   }
@@ -165,7 +165,7 @@ public class MarcStreamParserImpl implements MarcStreamParser {
 
   @Override
   public void terminateOnError(Throwable terminatedCause) {
-    log.warn("MarcStreamParser.terminateOnError(Throwable terminatedCause): " + terminatedCause);
+    LOGGER.warn("MarcStreamParser.terminateOnError(Throwable terminatedCause): " + terminatedCause);
     terminatedCause.printStackTrace();
     if (!terminationOnErrorRequested) {
       this.terminationOnErrorCause = terminatedCause;
@@ -193,13 +193,13 @@ public class MarcStreamParserImpl implements MarcStreamParser {
 
   private void endStream() {
     bufferInputStream.end();
-    log.debug("MarcStreamParser.endStream() - completed.");
+    LOGGER.debug("MarcStreamParser.endStream() - completed.");
   }
 
   private void end() {
     if (!terminated) {
       terminated = true;
-      log.debug("MarcStreamParser.end() - starting...");
+      LOGGER.debug("MarcStreamParser.end() - starting...");
       try {
         Handler<Void> handler = endHandler;
         if (handler != null) {
@@ -207,26 +207,26 @@ public class MarcStreamParserImpl implements MarcStreamParser {
         }
       } finally {
         bufferInputStream.close();
-        log.debug("MarcStreamParser.end() - completed.");
+        LOGGER.debug("MarcStreamParser.end() - completed.");
       }
     }
   }
 
   private void abort() {
-    log.debug("MarcStreamParser.abort()");
+    LOGGER.debug("MarcStreamParser.abort()");
     demand = false;
     streamEnded = true;
 
     ReadStream<Buffer> s = stream;
     if (s != null) {
       s.pause();
-      log.debug("Source stream is paused in abort().");
+      LOGGER.debug("Source stream is paused in abort().");
     }
   }
 
   private void doTerminate() {
     if (!terminationOnErrorCompleted) {
-      log.debug("MarcStreamParser.doTerminate() - starting...");
+      LOGGER.debug("MarcStreamParser.doTerminate() - starting...");
       abort();
       end();
 
@@ -236,14 +236,14 @@ public class MarcStreamParserImpl implements MarcStreamParser {
       }
 
       terminationOnErrorCompleted = true;
-      log.debug("MarcStreamParser.doTerminate() - completed.");
+      LOGGER.debug("MarcStreamParser.doTerminate() - completed.");
     }
   }
 
 
   private void doProcessAsynchronously() {
     if (terminated) {
-      log.warn("MarcStreamParser is already terminated...");
+      LOGGER.warn("MarcStreamParser is already terminated...");
     } else if (terminationOnErrorRequested) {
       doTerminate();
     } else {
@@ -278,7 +278,7 @@ public class MarcStreamParserImpl implements MarcStreamParser {
                   ReadStream<Buffer> s = stream;
                   if (s != null) {
                     s.resume();
-                    log.debug("Source stream is resumed in asyncHandler.");
+                    LOGGER.debug("Source stream is resumed in asyncHandler.");
                   }
                 }
               }
@@ -286,7 +286,7 @@ public class MarcStreamParserImpl implements MarcStreamParser {
                 doProcessAsynchronously();
               }
             } else {
-              log.error("Event handler is null!");
+              LOGGER.error("Event handler is null!");
               end();
             }
           } else {
